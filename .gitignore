@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.wrangler/
+*.local
+.env
+.env.production
+.dev.vars
+frontend/.env*
+!frontend/.env.example
+*.log

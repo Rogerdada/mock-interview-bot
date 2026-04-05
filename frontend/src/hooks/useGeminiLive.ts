@@ -1,0 +1,193 @@
+import { useCallback, useRef, useState } from 'react'
+import { getWebSocketUrl } from '../lib/api'
+import type { GeminiServerContent, TranscriptEntry } from '../types'
+
+export type ConnectionStatus = 'idle' | 'connecting' | 'ready' | 'error' | 'closed'
+
+export interface GeminiLiveState {
+  status: ConnectionStatus
+  transcript: TranscriptEntry[]
+  isAiSpeaking: boolean
+  error: string | null
+}
+
+export interface GeminiLiveControls {
+  connect: (systemPrompt: string) => void
+  sendAudioChunk: (base64pcm: string) => void
+  sendText: (text: string) => void
+  disconnect: () => void
+  appendUserTranscript: (text: string) => void
+}
+
+export function useGeminiLive(
+  onAudioChunk: (base64pcm: string) => void
+): GeminiLiveState & GeminiLiveControls {
+  const [status, setStatus] = useState<ConnectionStatus>('idle')
+  const [transcript, setTranscript] = useState<TranscriptEntry[]>([])
+  const [isAiSpeaking, setIsAiSpeaking] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const wsRef = useRef<WebSocket | null>(null)
+  const accTextRef = useRef<string>('')
+
+  const appendEntry = useCallback((speaker: 'interviewer' | 'candidate', text: string) => {
+    setTranscript((prev) => {
+      // Merge with the last entry if same speaker and recent
+      const last = prev[prev.length - 1]
+      if (last && last.speaker === speaker && Date.now() - last.timestamp < 3000) {
+        return [
+          ...prev.slice(0, -1),
+          { speaker, text: last.text + ' ' + text, timestamp: Date.now() },
+        ]
+      }
+      return [...prev, { speaker, text, timestamp: Date.now() }]
+    })
+  }, [])
+
+  const appendUserTranscript = useCallback(
+    (text: string) => {
+      if (text.trim()) appendEntry('candidate', text.trim())
+    },
+    [appendEntry]
+  )
+
+  const connect = useCallback(
+    (systemPrompt: string) => {
+      if (wsRef.current) {
+        wsRef.current.close()
+      }
+      setStatus('connecting')
+      setError(null)
+      setTranscript([])
+      accTextRef.current = ''
+
+      const ws = new WebSocket(getWebSocketUrl())
+      wsRef.current = ws
+
+      ws.onopen = () => {
+        // Send config as the first message
+        ws.send(JSON.stringify({ type: 'config', systemPrompt }))
+      }
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data as string) as GeminiServerContent & {
+            type?: string
+            message?: string
+            code?: number
+          }
+
+          // Worker-level errors
+          if (data.type === 'error') {
+            setError(data.message ?? 'Unknown error from proxy')
+            setStatus('error')
+            return
+          }
+
+          if (data.type === 'gemini_closed') {
+            setStatus('closed')
+            return
+          }
+
+          // Gemini setup complete
+          if (data.setupComplete !== undefined) {
+            setStatus('ready')
+            return
+          }
+
+          // Server content (audio + text)
+          if (data.serverContent) {
+            const { serverContent } = data
+
+            if (serverContent.modelTurn?.parts) {
+              let hasAudio = false
+              for (const part of serverContent.modelTurn.parts) {
+                if ('inlineData' in part && part.inlineData.mimeType.startsWith('audio/')) {
+                  onAudioChunk(part.inlineData.data)
+                  hasAudio = true
+                } else if ('text' in part && part.text) {
+                  accTextRef.current += part.text
+                }
+              }
+              if (hasAudio) setIsAiSpeaking(true)
+            }
+
+            if (serverContent.turnComplete) {
+              setIsAiSpeaking(false)
+              if (accTextRef.current.trim()) {
+                appendEntry('interviewer', accTextRef.current.trim())
+                accTextRef.current = ''
+              }
+            }
+
+            if (serverContent.interrupted) {
+              setIsAiSpeaking(false)
+              accTextRef.current = ''
+            }
+          }
+        } catch {
+          // Non-JSON or unexpected message — ignore
+        }
+      }
+
+      ws.onerror = () => {
+        setError('WebSocket connection error. Check your network and try again.')
+        setStatus('error')
+      }
+
+      ws.onclose = (event) => {
+        if (status !== 'error') {
+          setStatus(event.wasClean ? 'closed' : 'error')
+        }
+        wsRef.current = null
+      }
+    },
+    [onAudioChunk, appendEntry, status]
+  )
+
+  const sendAudioChunk = useCallback((base64pcm: string) => {
+    const ws = wsRef.current
+    if (!ws || ws.readyState !== WebSocket.OPEN) return
+    ws.send(
+      JSON.stringify({
+        realtimeInput: {
+          mediaChunks: [{ mimeType: 'audio/pcm;rate=16000', data: base64pcm }],
+        },
+      })
+    )
+  }, [])
+
+  const sendText = useCallback((text: string) => {
+    const ws = wsRef.current
+    if (!ws || ws.readyState !== WebSocket.OPEN) return
+    ws.send(
+      JSON.stringify({
+        clientContent: {
+          turns: [{ role: 'user', parts: [{ text }] }],
+          turnComplete: true,
+        },
+      })
+    )
+  }, [])
+
+  const disconnect = useCallback(() => {
+    if (wsRef.current) {
+      wsRef.current.close(1000, 'Session ended by user')
+      wsRef.current = null
+    }
+    setStatus('closed')
+    setIsAiSpeaking(false)
+  }, [])
+
+  return {
+    status,
+    transcript,
+    isAiSpeaking,
+    error,
+    connect,
+    sendAudioChunk,
+    sendText,
+    disconnect,
+    appendUserTranscript,
+  }
+}
