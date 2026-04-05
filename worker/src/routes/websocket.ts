@@ -37,7 +37,7 @@ export async function handleWebSocket(
         setup: {
           model: 'models/gemini-2.5-flash-native-audio-latest',
           generationConfig: {
-            responseModalities: ['AUDIO', 'TEXT'],
+            responseModalities: ['AUDIO'],
             speechConfig: {
               voiceConfig: {
                 prebuiltVoiceConfig: {
