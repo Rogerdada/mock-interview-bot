@@ -61,9 +61,15 @@ export async function handleWebSocket(
     })
 
     geminiWs.addEventListener('message', (event) => {
-      // Relay Gemini → frontend
+      // Relay Gemini → frontend, ensuring text messages stay as strings
       if (serverSocket.readyState === 1 /* OPEN */) {
-        serverSocket.send(event.data as string)
+        const data = event.data
+        if (data instanceof ArrayBuffer) {
+          // Convert binary to string so browser can JSON.parse it
+          serverSocket.send(new TextDecoder().decode(data))
+        } else {
+          serverSocket.send(data as string)
+        }
       }
     })
 

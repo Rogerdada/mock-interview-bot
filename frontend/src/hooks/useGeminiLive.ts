@@ -78,9 +78,20 @@ export function useGeminiLive(
         ws.send(JSON.stringify({ type: 'config', systemPrompt }))
       }
 
-      ws.onmessage = (event) => {
+      ws.onmessage = async (event) => {
         try {
-          const data = JSON.parse(event.data as string) as GeminiServerContent & {
+          // Handle string, Blob, or ArrayBuffer
+          let raw: string
+          if (typeof event.data === 'string') {
+            raw = event.data
+          } else if (event.data instanceof Blob) {
+            raw = await event.data.text()
+          } else if (event.data instanceof ArrayBuffer) {
+            raw = new TextDecoder().decode(event.data)
+          } else {
+            return
+          }
+          const data = JSON.parse(raw) as GeminiServerContent & {
             type?: string
             message?: string
             code?: number
