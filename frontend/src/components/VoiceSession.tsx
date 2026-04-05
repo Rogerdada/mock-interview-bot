@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { AudioVisualizer } from './AudioVisualizer'
 import { Timer } from './Timer'
 import { Transcript } from './Transcript'
@@ -15,71 +15,44 @@ interface Props {
 }
 
 export function VoiceSession({ config, onEnd }: Props) {
-  const [sessionState, setSessionState] = useState<
-    'initialising' | 'ready' | 'active' | 'ending' | 'error'
-  >('initialising')
+  const [phase, setPhase] = useState<'connecting' | 'active' | 'ending' | 'error'>('connecting')
   const [timerRunning, setTimerRunning] = useState(false)
-  const [statusMessage, setStatusMessage] = useState('Connecting to AI interviewer…')
-  const endCalledRef = useRef(false)
-
-  // Speech recognition for user transcript (fallback)
+  const [errorMsg, setErrorMsg] = useState('')
+  const endedRef = useRef(false)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null)
 
-  const { enqueueAudio, initPlayback, stopPlayback, isPlaying, amplitude: aiAmplitude } =
-    useAudioPlayback()
+  const { enqueueAudio, initPlayback, stopPlayback, isPlaying, amplitude: aiAmp } = useAudioPlayback()
+  const handleAudioChunk = useCallback((b64: string) => enqueueAudio(b64), [enqueueAudio])
 
-  const handleAudioChunk = useCallback(
-    (base64pcm: string) => {
-      enqueueAudio(base64pcm)
-    },
-    [enqueueAudio]
-  )
+  const { status: wsStatus, transcript, error: wsError, connect, sendAudioChunk, sendText, disconnect, appendUserTranscript } =
+    useGeminiLive(handleAudioChunk)
 
-  const {
-    status: wsStatus,
-    transcript,
-    error: wsError,
-    connect,
-    sendAudioChunk,
-    sendText,
-    disconnect,
-    appendUserTranscript,
-  } = useGeminiLive(handleAudioChunk)
+  const { isCapturing, amplitude: micAmp, startCapture, stopCapture } = useAudioCapture()
 
-  const { isCapturing, amplitude: micAmplitude, error: captureError, startCapture, stopCapture } =
-    useAudioCapture()
-
-  // Connect on mount
   useEffect(() => {
     initPlayback()
-    const systemPrompt = buildSystemPrompt(config)
-    connect(systemPrompt)
+    connect(buildSystemPrompt(config))
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // React to WebSocket status changes
   useEffect(() => {
     if (wsStatus === 'ready') {
-      setSessionState('ready')
-      setStatusMessage('AI interviewer connected. Starting your session…')
-      // Auto-start after brief delay
-      setTimeout(() => startSession(), 1000)
+      setTimeout(() => beginSession(), 800)
     } else if (wsStatus === 'error') {
-      setSessionState('error')
-      setStatusMessage(wsError ?? 'Connection failed')
+      setPhase('error')
+      setErrorMsg(wsError ?? 'Connection failed. Check your API key and try again.')
     }
   }, [wsStatus]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  async function startSession() {
+  async function beginSession() {
     try {
       await startCapture(sendAudioChunk)
       startSpeechRecognition()
-      setSessionState('active')
+      setPhase('active')
       setTimerRunning(true)
-      setStatusMessage('')
     } catch {
-      setSessionState('error')
-      setStatusMessage(captureError ?? 'Could not start microphone')
+      setPhase('error')
+      setErrorMsg('Microphone access denied. Please allow mic access and reload.')
     }
   }
 
@@ -88,171 +61,111 @@ export function VoiceSession({ config, onEnd }: Props) {
     const w = window as any
     const SR = w.webkitSpeechRecognition ?? w.SpeechRecognition
     if (!SR) return
-
-    const recognition = new SR()
-    recognition.continuous = true
-    recognition.interimResults = false
-    recognition.lang = 'en-US'
-
+    const r = new SR()
+    r.continuous = true
+    r.interimResults = false
+    r.lang = 'en-US'
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    recognition.onresult = (event: any) => {
-      const result = event.results[event.results.length - 1]
-      if (result.isFinal) {
-        appendUserTranscript(result[0].transcript)
-      }
+    r.onresult = (e: any) => {
+      const res = e.results[e.results.length - 1]
+      if (res.isFinal) appendUserTranscript(res[0].transcript)
     }
-
-    recognition.onerror = () => {
-      // Non-fatal — just stop trying
-    }
-
-    recognition.onend = () => {
-      // Restart if still active
-      if (sessionState === 'active') {
-        try { recognition.start() } catch { /* ignore */ }
-      }
-    }
-
-    recognition.start()
-    recognitionRef.current = recognition
+    r.onend = () => { try { r.start() } catch { /* ignore */ } }
+    r.start()
+    recognitionRef.current = r
   }
 
-  function handleTimerExpired() {
-    if (!endCalledRef.current) endInterview('timer')
-  }
-
-  function handleEndEarly() {
-    if (!endCalledRef.current) endInterview('manual')
-  }
-
-  async function endInterview(reason: 'timer' | 'manual') {
-    endCalledRef.current = true
-    setSessionState('ending')
+  function endInterview(reason: 'timer' | 'manual') {
+    if (endedRef.current) return
+    endedRef.current = true
+    setPhase('ending')
     setTimerRunning(false)
-    setStatusMessage('Wrapping up your session…')
-
     recognitionRef.current?.stop()
     stopCapture()
-
-    // Ask Gemini to wrap up gracefully
     if (reason === 'timer') {
-      sendText(
-        "We're out of time. Please give a brief closing statement wrapping up the interview, thank the candidate, and let them know feedback will follow."
-      )
-      // Give AI 5 seconds to finish speaking
-      await new Promise((r) => setTimeout(r, 5000))
+      sendText('Time is up. Please give a brief closing statement and thank the candidate.')
     }
-
-    disconnect()
-    stopPlayback()
-
-    onEnd(transcript)
+    setTimeout(() => {
+      disconnect()
+      stopPlayback()
+      onEnd(transcript)
+    }, reason === 'timer' ? 5000 : 500)
   }
 
-  const showVisualizer = sessionState === 'active'
-  const isMicActive = isCapturing && !isPlaying
-  const isAiActive = isPlaying
+  const speakerActive = isPlaying
+  const micActive = isCapturing && !isPlaying
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="min-h-screen flex flex-col bg-bg"
-    >
+    <div className="min-h-screen flex flex-col bg-[#09090b]">
       {/* Top bar */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-white/5">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.06]">
         <div>
-          <p className="label-mono">{config.parsedJd.role}</p>
-          <p className="text-muted text-xs mt-0.5">{config.parsedJd.company}</p>
+          <p className="text-sm font-medium text-zinc-100">{config.parsedJd.role}</p>
+          <p className="text-xs text-zinc-500 mt-0.5">{config.parsedJd.company}</p>
         </div>
-
-        <div className="flex items-center gap-6">
-          <div className="hidden sm:flex items-center gap-2 text-xs text-muted">
-            <span
-              className={`inline-block w-2 h-2 rounded-full ${
-                sessionState === 'active'
-                  ? isAiActive
-                    ? 'bg-indigo animate-pulse'
-                    : 'bg-accent animate-pulse'
-                  : 'bg-muted'
-              }`}
-            />
-            {sessionState === 'active'
-              ? isAiActive
-                ? 'AI speaking'
-                : 'Listening…'
-              : sessionState === 'ending'
-              ? 'Ending session…'
-              : ''}
-          </div>
-
-          <Timer
-            durationSeconds={config.duration * 60}
-            running={timerRunning}
-            onExpired={handleTimerExpired}
-          />
-
-          {sessionState === 'active' && (
-            <button
-              onClick={handleEndEarly}
-              className="btn-danger text-sm px-4 py-2"
-            >
-              End Early
+        <div className="flex items-center gap-4">
+          {phase === 'active' && (
+            <div className="flex items-center gap-1.5">
+              <span className={`w-1.5 h-1.5 rounded-full ${speakerActive ? 'bg-indigo-400 animate-pulse' : micActive ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-600'}`} />
+              <span className="text-xs text-zinc-500">
+                {speakerActive ? 'AI speaking' : 'Listening'}
+              </span>
+            </div>
+          )}
+          <Timer durationSeconds={config.duration * 60} running={timerRunning} onExpired={() => endInterview('timer')} />
+          {phase === 'active' && (
+            <button onClick={() => endInterview('manual')} className="btn-red text-xs px-3 py-1.5">
+              End
             </button>
           )}
         </div>
       </div>
 
       {/* Visualizer */}
-      {showVisualizer && (
-        <div className="px-6 py-4">
-          <div className="h-16 rounded-xl overflow-hidden bg-surface">
-            <AudioVisualizer
-              amplitude={isAiActive ? aiAmplitude : micAmplitude}
-              color={isAiActive ? 'indigo' : 'green'}
-            />
+      {phase === 'active' && (
+        <div className="px-6 pt-4">
+          <div className="h-12 rounded-xl overflow-hidden bg-white/[0.02] border border-white/[0.04]">
+            <AudioVisualizer amplitude={speakerActive ? aiAmp : micAmp} color={speakerActive ? 'indigo' : 'green'} />
           </div>
-          <p className="text-center text-muted text-xs mt-2">
-            {isAiActive ? 'Interviewer speaking' : 'Your turn — speak now'}
-          </p>
         </div>
       )}
 
-      {/* Status overlays */}
-      {(sessionState === 'initialising' ||
-        sessionState === 'ready' ||
-        sessionState === 'ending') && (
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <div className="flex justify-center mb-4">
-              <div className="w-12 h-12 rounded-full border-2 border-accent/30 border-t-accent animate-spin" />
+      {/* State overlays */}
+      <AnimatePresence>
+        {(phase === 'connecting' || phase === 'ending') && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="flex-1 flex flex-col items-center justify-center gap-3"
+          >
+            <div className="w-8 h-8 rounded-full border-2 border-zinc-700 border-t-emerald-500 animate-spin" />
+            <p className="text-zinc-400 text-sm">
+              {phase === 'connecting' ? 'Connecting to AI interviewer…' : 'Wrapping up session…'}
+            </p>
+          </motion.div>
+        )}
+        {phase === 'error' && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+            className="flex-1 flex items-center justify-center px-6"
+          >
+            <div className="glass p-8 max-w-sm text-center">
+              <p className="text-red-400 font-semibold mb-2">Connection Error</p>
+              <p className="text-zinc-400 text-sm mb-5">{errorMsg}</p>
+              <button onClick={() => window.location.reload()} className="btn-ghost text-sm">Reload</button>
             </div>
-            <p className="text-muted">{statusMessage}</p>
-          </div>
-        </div>
-      )}
-
-      {sessionState === 'error' && (
-        <div className="flex-1 flex items-center justify-center px-6">
-          <div className="text-center card p-8 max-w-md">
-            <p className="text-danger text-lg font-semibold mb-2">Connection Error</p>
-            <p className="text-muted text-sm mb-6">{statusMessage}</p>
-            <button onClick={() => window.location.reload()} className="btn-secondary">
-              Try Again
-            </button>
-          </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Transcript */}
-      {sessionState === 'active' && (
-        <div className="flex-1 flex flex-col min-h-0 mx-4 mb-4 card overflow-hidden">
-          <div className="px-4 pt-4 pb-2 border-b border-white/5">
-            <p className="label-mono">Live Transcript</p>
+      {phase === 'active' && (
+        <div className="flex-1 flex flex-col min-h-0 mx-4 my-4 glass overflow-hidden">
+          <div className="px-4 py-3 border-b border-white/[0.06]">
+            <p className="label">Transcript</p>
           </div>
           <Transcript entries={transcript} />
         </div>
       )}
-    </motion.div>
+    </div>
   )
 }

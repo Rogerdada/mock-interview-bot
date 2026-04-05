@@ -9,67 +9,37 @@ interface Props {
   onBack: () => void
 }
 
-const INTERVIEW_TYPES: Array<{
-  id: InterviewType
-  label: string
-  description: string
-  icon: string
-}> = [
-  {
-    id: 'behavioral',
-    label: 'Behavioral',
-    description: "STAR-method questions based on the role's competencies. Leadership, collaboration, problem-solving.",
-    icon: '🧠',
-  },
-  {
-    id: 'case-study',
-    label: 'Case Study',
-    description: 'Business or product case relevant to the industry. Tests structured thinking and business acumen.',
-    icon: '📊',
-  },
-  {
-    id: 'company-knowledge',
-    label: 'Company Knowledge',
-    description: 'Products, competitive landscape, strategy, recent news. Tests depth of research.',
-    icon: '🏢',
-  },
+const TYPES: Array<{ id: InterviewType; label: string; desc: string }> = [
+  { id: 'behavioral',        label: 'Behavioral',        desc: 'STAR-method questions on leadership, collaboration & problem-solving' },
+  { id: 'case-study',        label: 'Case Study',         desc: 'Business scenario — tests structured thinking & data intuition' },
+  { id: 'company-knowledge', label: 'Company Knowledge',  desc: 'Products, strategy, competitors & why you want this role' },
 ]
 
-const DURATIONS: InterviewDuration[] = [5, 10, 15]
-
-export function InterviewConfig({ jobDescription: _jd, parsedJd, onStart, onBack }: Props) {
-  const [selectedType, setSelectedType] = useState<InterviewType>('behavioral')
-  const [selectedDuration, setSelectedDuration] = useState<InterviewDuration>(10)
+export function InterviewConfig({ parsedJd, onStart, onBack }: Props) {
+  const [type, setType]         = useState<InterviewType>('behavioral')
+  const [duration, setDuration] = useState<InterviewDuration>(10)
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
+      exit={{ opacity: 0, y: -12 }}
       className="min-h-screen flex items-center justify-center px-4 py-12"
     >
-      <div className="w-full max-w-2xl">
-        <button
-          onClick={onBack}
-          className="text-muted hover:text-text text-sm mb-8 flex items-center gap-1 transition-colors"
-        >
+      <div className="w-full max-w-lg">
+        <button onClick={onBack} className="text-zinc-500 hover:text-zinc-300 text-sm mb-8 transition-colors">
           ← Back
         </button>
 
-        {/* Role summary */}
-        <div className="card p-6 mb-6">
-          <p className="label-mono mb-3">Position</p>
-          <h2 className="font-mono text-2xl font-bold text-text">
-            {parsedJd.role}
-          </h2>
-          <p className="text-muted mt-1">{parsedJd.company}</p>
+        {/* Role card */}
+        <div className="glass p-5 mb-6">
+          <p className="label mb-1">Position</p>
+          <p className="text-lg font-semibold text-white">{parsedJd.role}</p>
+          <p className="text-zinc-400 text-sm">{parsedJd.company}</p>
           {parsedJd.keyCompetencies.length > 0 && (
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5 mt-3">
               {parsedJd.keyCompetencies.map((c) => (
-                <span
-                  key={c}
-                  className="text-xs px-3 py-1 rounded-full bg-indigo/10 text-indigo border border-indigo/20"
-                >
+                <span key={c} className="text-[11px] px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
                   {c}
                 </span>
               ))}
@@ -77,63 +47,47 @@ export function InterviewConfig({ jobDescription: _jd, parsedJd, onStart, onBack
           )}
         </div>
 
-        {/* Interview type */}
-        <div className="mb-6">
-          <p className="label-mono mb-3">Interview Type</p>
-          <div className="grid gap-3">
-            {INTERVIEW_TYPES.map((type) => (
-              <button
-                key={type.id}
-                onClick={() => setSelectedType(type.id)}
-                className={`card p-5 text-left transition-all duration-200 ${
-                  selectedType === type.id
-                    ? 'border-accent/50 bg-accent/5'
-                    : 'hover:border-white/15'
-                }`}
-              >
-                <div className="flex items-start gap-4">
-                  <span className="text-2xl">{type.icon}</span>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3">
-                      <span className="font-semibold text-text">{type.label}</span>
-                      {selectedType === type.id && (
-                        <span className="text-xs bg-accent/20 text-accent px-2 py-0.5 rounded-full font-mono">
-                          selected
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-muted text-sm mt-1">{type.description}</p>
-                  </div>
-                </div>
-              </button>
-            ))}
-          </div>
+        {/* Type */}
+        <p className="label mb-2">Interview type</p>
+        <div className="space-y-2 mb-6">
+          {TYPES.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setType(t.id)}
+              className={`w-full glass p-4 text-left transition-all duration-150 ${
+                type === t.id ? 'border-emerald-500/40 bg-emerald-500/5' : 'hover:border-white/10'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-medium text-sm text-white">{t.label}</span>
+                {type === t.id && (
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" />
+                )}
+              </div>
+              <p className="text-zinc-500 text-xs mt-0.5">{t.desc}</p>
+            </button>
+          ))}
         </div>
 
         {/* Duration */}
-        <div className="mb-8">
-          <p className="label-mono mb-3">Interview Length</p>
-          <div className="flex gap-3">
-            {DURATIONS.map((d) => (
-              <button
-                key={d}
-                onClick={() => setSelectedDuration(d)}
-                className={`flex-1 card py-4 font-mono font-bold text-lg transition-all duration-200 ${
-                  selectedDuration === d
-                    ? 'border-accent/50 text-accent bg-accent/5'
-                    : 'text-muted hover:text-text hover:border-white/15'
-                }`}
-              >
-                {d} min
-              </button>
-            ))}
-          </div>
+        <p className="label mb-2">Duration</p>
+        <div className="flex gap-2 mb-8">
+          {([5, 10, 15] as InterviewDuration[]).map((d) => (
+            <button
+              key={d}
+              onClick={() => setDuration(d)}
+              className={`flex-1 py-2.5 rounded-xl text-sm font-mono font-bold border transition-all ${
+                duration === d
+                  ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-400'
+                  : 'bg-white/[0.03] border-white/[0.06] text-zinc-500 hover:text-zinc-300'
+              }`}
+            >
+              {d} min
+            </button>
+          ))}
         </div>
 
-        <button
-          onClick={() => onStart(selectedType, selectedDuration)}
-          className="btn-primary w-full text-base"
-        >
+        <button onClick={() => onStart(type, duration)} className="btn-green w-full">
           Start Interview
         </button>
       </div>

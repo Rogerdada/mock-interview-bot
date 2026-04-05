@@ -1,5 +1,5 @@
 export const GEMINI_REST_URL =
-  'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent'
+  'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent'
 
 export const GEMINI_LIVE_WS_URL =
   'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent'
