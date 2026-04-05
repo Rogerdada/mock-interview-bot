@@ -37,8 +37,7 @@ ${body.text.slice(0, 4000)}`
     }
 
     return new Response(JSON.stringify(parsed), { status: 200, headers })
-  } catch (err) {
-    // Fallback if parse fails
+  } catch {
     return new Response(
       JSON.stringify({ company: 'Unknown Company', role: 'Unknown Role', keyCompetencies: [] }),
       { status: 200, headers }
