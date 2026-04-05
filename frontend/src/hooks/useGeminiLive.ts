@@ -64,6 +64,15 @@ export function useGeminiLive(
       const ws = new WebSocket(getWebSocketUrl())
       wsRef.current = ws
 
+      // Timeout: if setupComplete not received in 15s, surface an error
+      const setupTimeout = setTimeout(() => {
+        if (wsRef.current === ws) {
+          setError('Timed out connecting to Gemini. Check that your API key is valid and has Gemini 2.0 Flash Live access.')
+          setStatus('error')
+          ws.close()
+        }
+      }, 15000)
+
       ws.onopen = () => {
         // Send config as the first message
         ws.send(JSON.stringify({ type: 'config', systemPrompt }))
@@ -91,6 +100,7 @@ export function useGeminiLive(
 
           // Gemini setup complete
           if (data.setupComplete !== undefined) {
+            clearTimeout(setupTimeout)
             setStatus('ready')
             return
           }
@@ -131,18 +141,18 @@ export function useGeminiLive(
       }
 
       ws.onerror = () => {
+        clearTimeout(setupTimeout)
         setError('WebSocket connection error. Check your network and try again.')
         setStatus('error')
       }
 
       ws.onclose = (event) => {
-        if (status !== 'error') {
-          setStatus(event.wasClean ? 'closed' : 'error')
-        }
+        clearTimeout(setupTimeout)
+        setStatus((prev) => prev === 'error' ? prev : (event.wasClean ? 'closed' : 'error'))
         wsRef.current = null
       }
     },
-    [onAudioChunk, appendEntry, status]
+    [onAudioChunk, appendEntry]
   )
 
   const sendAudioChunk = useCallback((base64pcm: string) => {

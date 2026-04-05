@@ -62,20 +62,20 @@ export async function handleWebSocket(
 
     geminiWs.addEventListener('message', (event) => {
       // Relay Gemini → frontend
-      if (serverSocket.readyState === WebSocket.READY_STATE_OPEN) {
+      if (serverSocket.readyState === 1 /* OPEN */) {
         serverSocket.send(event.data as string)
       }
     })
 
     geminiWs.addEventListener('close', (event) => {
-      if (serverSocket.readyState === WebSocket.READY_STATE_OPEN) {
+      if (serverSocket.readyState === 1 /* OPEN */) {
         serverSocket.send(JSON.stringify({ type: 'gemini_closed', code: event.code }))
         serverSocket.close(1000, 'Gemini connection closed')
       }
     })
 
     geminiWs.addEventListener('error', () => {
-      if (serverSocket.readyState === WebSocket.READY_STATE_OPEN) {
+      if (serverSocket.readyState === 1 /* OPEN */) {
         serverSocket.send(JSON.stringify({ type: 'error', message: 'Gemini WebSocket error' }))
       }
     })
@@ -104,22 +104,22 @@ export async function handleWebSocket(
 
     // Relay frontend → Gemini
     if (geminiWs) {
-      if (geminiWs.readyState === WebSocket.READY_STATE_OPEN) {
+      if (geminiWs.readyState === 1 /* OPEN */) {
         geminiWs.send(data)
-      } else if (geminiWs.readyState === WebSocket.READY_STATE_CONNECTING) {
+      } else if (geminiWs.readyState === 0 /* CONNECTING */) {
         pendingMessages.push(data)
       }
     }
   })
 
   serverSocket.addEventListener('close', () => {
-    if (geminiWs && geminiWs.readyState === WebSocket.READY_STATE_OPEN) {
+    if (geminiWs && geminiWs.readyState === 1 /* OPEN */) {
       geminiWs.close(1000, 'Frontend disconnected')
     }
   })
 
   serverSocket.addEventListener('error', () => {
-    if (geminiWs && geminiWs.readyState === WebSocket.READY_STATE_OPEN) {
+    if (geminiWs && geminiWs.readyState === 1 /* OPEN */) {
       geminiWs.close(1011, 'Frontend error')
     }
   })
