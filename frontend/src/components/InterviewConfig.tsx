@@ -36,9 +36,9 @@ export function InterviewConfig({ parsedJd, onStart, onBack }: Props) {
           <p className="label mb-1">Position</p>
           <p className="text-lg font-semibold text-white">{parsedJd.role}</p>
           <p className="text-zinc-400 text-sm">{parsedJd.company}</p>
-          {parsedJd.keyCompetencies.length > 0 && (
+          {(parsedJd.keyCompetencies ?? []).length > 0 && (
             <div className="flex flex-wrap gap-1.5 mt-3">
-              {parsedJd.keyCompetencies.map((c) => (
+              {(parsedJd.keyCompetencies ?? []).map((c) => (
                 <span key={c} className="text-[11px] px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
                   {c}
                 </span>

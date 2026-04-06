@@ -47,17 +47,17 @@ export default function App() {
   async function handleJobInput(jobDescription: string) {
     patch({ jobDescription, screen: 'config', parsedJd: null })
     try {
-      const parsedJd = await parseJobDescription(jobDescription)
-      patch({ parsedJd })
-    } catch {
-      // Fallback — don't block the user
+      const raw = await parseJobDescription(jobDescription)
+      // Ensure all fields exist even if API returns partial data
       patch({
         parsedJd: {
-          company: 'the company',
-          role: 'this role',
-          keyCompetencies: [],
+          company: raw.company || 'Unknown Company',
+          role: raw.role || 'Unknown Role',
+          keyCompetencies: Array.isArray(raw.keyCompetencies) ? raw.keyCompetencies : [],
         },
       })
+    } catch {
+      patch({ parsedJd: { company: 'Unknown Company', role: 'Unknown Role', keyCompetencies: [] } })
     }
   }
 
