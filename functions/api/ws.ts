@@ -30,10 +30,13 @@ export const onRequestGet: PagesFunction<{ GEMINI_API_KEY: string }> = async ({ 
       pending.length = 0
     })
 
-    geminiWs.addEventListener('message', (event) => {
+    geminiWs.addEventListener('message', async (event) => {
       if (server.readyState !== 1) return
       const data = event.data
-      if (data instanceof ArrayBuffer) {
+      if (data instanceof Blob) {
+        // Cloudflare runtime delivers outbound WS messages as Blobs
+        server.send(await data.text())
+      } else if (data instanceof ArrayBuffer) {
         server.send(new TextDecoder().decode(data))
       } else {
         server.send(data as string)
