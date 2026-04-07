@@ -21,6 +21,7 @@ export function VoiceSession({ config, onEnd }: Props) {
   const endedRef = useRef(false)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null)
+  const isPlayingRef = useRef(false)
 
   const { enqueueAudio, initPlayback, stopPlayback, isPlaying, amplitude: aiAmp } = useAudioPlayback()
   const handleAudioChunk = useCallback((b64: string) => enqueueAudio(b64), [enqueueAudio])
@@ -70,10 +71,22 @@ export function VoiceSession({ config, onEnd }: Props) {
       const res = e.results[e.results.length - 1]
       if (res.isFinal) appendUserTranscript(res[0].transcript)
     }
-    r.onend = () => { try { r.start() } catch { /* ignore */ } }
+    r.onend = () => { if (!isPlayingRef.current) { try { r.start() } catch { /* ignore */ } } }
     r.start()
     recognitionRef.current = r
   }
+
+  // Pause speech recognition while AI is speaking to avoid capturing AI audio
+  useEffect(() => {
+    isPlayingRef.current = isPlaying
+    const r = recognitionRef.current
+    if (!r || phase !== 'active') return
+    if (isPlaying) {
+      try { r.stop() } catch { /* ignore */ }
+    } else {
+      try { r.start() } catch { /* ignore */ }
+    }
+  }, [isPlaying]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function endInterview(reason: 'timer' | 'manual') {
     if (endedRef.current) return
