@@ -29,6 +29,11 @@ export function VoiceSession({ config, onEnd }: Props) {
   const { status: wsStatus, transcript, error: wsError, connect, sendAudioChunk, sendText, disconnect, appendUserTranscript } =
     useGeminiLive(handleAudioChunk)
 
+  // Don't forward mic audio to Gemini while AI is playing (avoids echo/confusion)
+  const safeSendAudioChunk = useCallback((b64: string) => {
+    if (!isPlayingRef.current) sendAudioChunk(b64)
+  }, [sendAudioChunk])
+
   const { isCapturing, amplitude: micAmp, startCapture, stopCapture } = useAudioCapture()
 
   useEffect(() => {
@@ -47,7 +52,7 @@ export function VoiceSession({ config, onEnd }: Props) {
 
   async function beginSession() {
     try {
-      await startCapture(sendAudioChunk)
+      await startCapture(safeSendAudioChunk)
       startSpeechRecognition()
       setPhase('active')
       setTimerRunning(true)
