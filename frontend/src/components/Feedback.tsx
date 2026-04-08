@@ -9,18 +9,13 @@ interface Props {
   onTryAgain: () => void
 }
 
-const RATING_META: Record<HireRating, { color: string; bar: string; value: number }> = {
-  'Strong Hire':     { color: 'text-emerald-600', bar: 'bg-emerald-500', value: 6 },
-  'Hire':            { color: 'text-emerald-600', bar: 'bg-emerald-500', value: 5 },
-  'Leaning Hire':    { color: 'text-amber-600',   bar: 'bg-amber-400',   value: 4 },
-  'Leaning No Hire': { color: 'text-orange-600',  bar: 'bg-orange-400',  value: 3 },
-  'No Hire':         { color: 'text-red-600',     bar: 'bg-red-500',     value: 2 },
-  'Strong No Hire':  { color: 'text-red-600',     bar: 'bg-red-500',     value: 1 },
-}
-
-function RatingPill({ rating }: { rating: HireRating }) {
-  const m = RATING_META[rating] ?? RATING_META['Leaning No Hire']
-  return <span className={`text-xs font-mono font-bold ${m.color}`}>{rating}</span>
+const RATING_META: Record<HireRating, { color: string; bar: string; bg: string; value: number }> = {
+  'Strong Hire':     { color: '#059669', bar: '#10b981', bg: 'rgba(16,185,129,0.08)',  value: 6 },
+  'Hire':            { color: '#059669', bar: '#10b981', bg: 'rgba(16,185,129,0.08)',  value: 5 },
+  'Leaning Hire':    { color: '#d97706', bar: '#f59e0b', bg: 'rgba(245,158,11,0.08)',  value: 4 },
+  'Leaning No Hire': { color: '#ea580c', bar: '#f97316', bg: 'rgba(249,115,22,0.08)', value: 3 },
+  'No Hire':         { color: '#dc2626', bar: '#ef4444', bg: 'rgba(239,68,68,0.08)',   value: 2 },
+  'Strong No Hire':  { color: '#dc2626', bar: '#ef4444', bg: 'rgba(239,68,68,0.08)',   value: 1 },
 }
 
 export function Feedback({ evaluation, config, onTryAgain }: Props) {
@@ -59,34 +54,40 @@ export function Feedback({ evaluation, config, onTryAgain }: Props) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
       className="min-h-screen px-4 py-12"
     >
       <div className="max-w-2xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="glass p-8 mb-4 text-center"
+          style={{ background: recMeta.bg }}>
           <p className="label mb-3">Interview Complete</p>
-          <p className={`font-mono text-4xl font-bold mb-3 ${recMeta.color}`}>{rec}</p>
-          <p className="text-zinc-500 text-sm max-w-lg mx-auto leading-relaxed">{evaluation.overallSummary}</p>
+          <p className="font-semibold text-4xl mb-3 tracking-tight" style={{ color: recMeta.color }}>
+            {rec}
+          </p>
+          <p className="text-stone-600 text-sm max-w-lg mx-auto leading-relaxed">
+            {evaluation.overallSummary}
+          </p>
         </div>
 
         {/* Rubric */}
         <div className="glass p-5 mb-4">
           <p className="label mb-4">Evaluation Rubric</p>
-          <div className="space-y-4">
+          <div className="space-y-5">
             {evaluation.dimensions.map((d) => {
               const m = RATING_META[d.rating as HireRating] ?? RATING_META['Leaning No Hire']
               return (
                 <div key={d.name}>
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-sm text-zinc-800">{d.name}</span>
-                    <RatingPill rating={d.rating as HireRating} />
+                    <span className="text-sm font-medium text-stone-800">{d.name}</span>
+                    <span className="text-xs font-semibold font-mono" style={{ color: m.color }}>{d.rating}</span>
                   </div>
-                  <div className="h-1 bg-zinc-100 rounded-full overflow-hidden mb-2">
-                    <div className={`h-full rounded-full transition-all duration-700 ${m.bar}`} style={{ width: `${(m.value / 6) * 100}%` }} />
+                  <div className="h-1 rounded-full overflow-hidden mb-2" style={{ background: 'rgba(0,0,0,0.06)' }}>
+                    <div className="h-full rounded-full transition-all duration-700" style={{ width: `${(m.value / 6) * 100}%`, background: m.bar }} />
                   </div>
-                  <p className="text-zinc-500 text-xs leading-relaxed">{d.justification}</p>
+                  <p className="text-stone-500 text-xs leading-relaxed">{d.justification}</p>
                 </div>
               )
             })}
@@ -96,21 +97,21 @@ export function Feedback({ evaluation, config, onTryAgain }: Props) {
         {/* Strengths + Improvements */}
         <div className="grid grid-cols-2 gap-3 mb-4">
           <div className="glass p-4">
-            <p className="label text-emerald-600 mb-3">Strengths</p>
-            <ul className="space-y-2">
+            <p className="label mb-3" style={{ color: '#059669' }}>Strengths</p>
+            <ul className="space-y-2.5">
               {evaluation.strengths.map((s, i) => (
-                <li key={i} className="text-xs text-zinc-700 flex gap-2">
-                  <span className="text-emerald-500 flex-shrink-0">✓</span>{s}
+                <li key={i} className="text-xs text-stone-700 flex gap-2 leading-relaxed">
+                  <span className="text-emerald-500 flex-shrink-0 mt-px">✓</span>{s}
                 </li>
               ))}
             </ul>
           </div>
           <div className="glass p-4">
-            <p className="label text-amber-600 mb-3">Improve</p>
-            <ul className="space-y-2">
+            <p className="label mb-3" style={{ color: '#d97706' }}>Improve</p>
+            <ul className="space-y-2.5">
               {evaluation.improvements.map((s, i) => (
-                <li key={i} className="text-xs text-zinc-700 flex gap-2">
-                  <span className="text-amber-500 flex-shrink-0">→</span>{s}
+                <li key={i} className="text-xs text-stone-700 flex gap-2 leading-relaxed">
+                  <span className="text-amber-500 flex-shrink-0 mt-px">→</span>{s}
                 </li>
               ))}
             </ul>
@@ -123,21 +124,22 @@ export function Feedback({ evaluation, config, onTryAgain }: Props) {
             <p className="label mb-3">Stronger Answers</p>
             <div className="space-y-2">
               {evaluation.sampleStrongerAnswers.map((item, i) => (
-                <div key={i} className="border border-zinc-200 rounded-xl overflow-hidden">
+                <div key={i} className="rounded-xl overflow-hidden"
+                  style={{ boxShadow: '0 0 0 1px rgba(0,0,0,0.07)' }}>
                   <button
                     onClick={() => setExpanded(expanded === i ? null : i)}
-                    className="w-full text-left px-4 py-3 flex items-start justify-between gap-4 hover:bg-zinc-50 transition-colors"
+                    className="w-full text-left px-4 py-3 flex items-start justify-between gap-4 hover:bg-stone-50 transition-colors"
                   >
                     <div>
-                      <p className="text-sm text-zinc-900">{item.originalQuestion}</p>
-                      <p className="text-xs text-zinc-500 mt-0.5">You: {item.candidateAnswer}</p>
+                      <p className="text-sm text-stone-900 font-medium">{item.originalQuestion}</p>
+                      <p className="text-xs text-stone-400 mt-0.5">You: {item.candidateAnswer}</p>
                     </div>
-                    <span className="text-zinc-400 text-xs flex-shrink-0 mt-1">{expanded === i ? '▲' : '▼'}</span>
+                    <span className="text-stone-300 text-xs flex-shrink-0 mt-1">{expanded === i ? '▲' : '▼'}</span>
                   </button>
                   {expanded === i && (
-                    <div className="px-4 pb-4 border-t border-zinc-200">
+                    <div className="px-4 pb-4" style={{ borderTop: '1px solid rgba(0,0,0,0.06)' }}>
                       <p className="label mt-3 mb-1.5">Stronger answer</p>
-                      <p className="text-zinc-700 text-xs leading-relaxed">{item.strongerAnswer}</p>
+                      <p className="text-stone-600 text-xs leading-relaxed">{item.strongerAnswer}</p>
                     </div>
                   )}
                 </div>

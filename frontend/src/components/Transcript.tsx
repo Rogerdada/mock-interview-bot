@@ -10,7 +10,7 @@ export function Transcript({ entries }: Props) {
 
   if (entries.length === 0) {
     return (
-      <div className="flex-1 flex items-center justify-center text-zinc-400 text-sm">
+      <div className="flex-1 flex items-center justify-center text-stone-400 text-sm">
         Transcript will appear here…
       </div>
     )
@@ -26,16 +26,20 @@ export function Transcript({ entries }: Props) {
             animate={{ opacity: 1, y: 0 }}
             className={`flex gap-3 ${e.speaker === 'candidate' ? 'flex-row-reverse' : ''}`}
           >
-            <div className={`w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-mono font-bold mt-0.5 ${
-              e.speaker === 'interviewer' ? 'bg-indigo-100 text-indigo-600' : 'bg-emerald-100 text-emerald-600'
+            <div className={`w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-bold mt-0.5 ${
+              e.speaker === 'interviewer'
+                ? 'bg-indigo-100 text-indigo-600'
+                : 'bg-emerald-100 text-emerald-600'
             }`}>
               {e.speaker === 'interviewer' ? 'AI' : 'Y'}
             </div>
-            <div className={`max-w-[78%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed ${
-              e.speaker === 'interviewer'
-                ? 'bg-zinc-100 text-zinc-800 rounded-tl-sm'
-                : 'bg-emerald-50 text-zinc-800 border border-emerald-200 rounded-tr-sm'
-            }`}>
+            <div
+              className="max-w-[78%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed text-stone-800"
+              style={e.speaker === 'interviewer'
+                ? { background: '#f5f4f2', borderRadius: '4px 16px 16px 16px' }
+                : { background: 'rgba(16,185,129,0.07)', boxShadow: '0 0 0 1px rgba(16,185,129,0.18)', borderRadius: '16px 4px 16px 16px' }
+              }
+            >
               {e.text}
             </div>
           </motion.div>

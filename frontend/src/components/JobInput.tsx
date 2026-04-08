@@ -38,37 +38,41 @@ export function JobInput({ onContinue }: Props) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -12 }}
+      transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
       className="min-h-screen flex items-center justify-center px-4"
     >
       <div className="w-full max-w-xl">
-        {/* Logo */}
+        {/* Header */}
         <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 mb-6">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-              <span className="text-emerald-600 text-sm font-mono font-bold">M</span>
+          <div className="inline-flex items-center gap-2.5 mb-7">
+            <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center"
+              style={{ boxShadow: '0 2px 8px rgba(16,185,129,0.35)' }}>
+              <span className="text-white text-sm font-bold">M</span>
             </div>
-            <span className="font-mono text-sm font-bold text-zinc-700">MockMind</span>
+            <span className="text-sm font-semibold text-stone-700 tracking-tight">MockMind</span>
           </div>
-          <h1 className="text-3xl font-semibold text-zinc-900 tracking-tight mb-2">
+          <h1 className="text-[2rem] font-semibold text-stone-900 tracking-tight leading-tight mb-3">
             Practice your interview
           </h1>
-          <p className="text-zinc-500 text-sm">
+          <p className="text-stone-500 text-[0.9375rem]">
             Real-time voice mock interview with AI feedback
           </p>
         </div>
 
         <div className="glass p-6">
           {/* Mode tabs */}
-          <div className="flex gap-1 mb-5 p-1 bg-zinc-100 rounded-lg w-fit">
+          <div className="flex gap-1 mb-5 p-1 rounded-lg w-fit" style={{ background: 'rgba(0,0,0,0.04)' }}>
             {(['text', 'url'] as const).map((m) => (
               <button
                 key={m}
                 onClick={() => { setMode(m); setError(null) }}
-                className={`px-4 py-1.5 rounded-md text-xs font-medium transition-all ${
-                  mode === m ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-700'
+                className={`px-4 py-1.5 rounded-md text-xs font-medium transition-all duration-150 ${
+                  mode === m
+                    ? 'bg-white text-stone-800 shadow-sm'
+                    : 'text-stone-500 hover:text-stone-700'
                 }`}
               >
                 {m === 'text' ? 'Paste text' : 'From URL'}
@@ -96,7 +100,8 @@ export function JobInput({ onContinue }: Props) {
           )}
 
           {error && (
-            <p className="mt-3 text-red-600 text-xs bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+            <p className="mt-3 text-red-600 text-xs rounded-lg px-3 py-2"
+              style={{ background: 'rgba(239,68,68,0.06)', boxShadow: '0 0 0 1px rgba(239,68,68,0.12)' }}>
               {error}
             </p>
           )}
@@ -111,7 +116,7 @@ export function JobInput({ onContinue }: Props) {
           </button>
         </div>
 
-        <p className="text-center text-zinc-400 text-xs mt-5">
+        <p className="text-center text-stone-400 text-xs mt-5">
           Nothing is stored — session stays in your browser only
         </p>
       </div>

@@ -46,23 +46,12 @@ export function Timer({ durationSeconds, running, onExpired }: Props) {
   const isDanger = remaining <= 30
 
   return (
-    <div className="flex items-center gap-3">
-      {/* Progress ring */}
-      <div className="relative w-10 h-10">
+    <div className="flex items-center gap-2.5">
+      <div className="relative w-9 h-9">
         <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
+          <circle cx="18" cy="18" r="15" fill="none" stroke="rgba(0,0,0,0.08)" strokeWidth="3" />
           <circle
-            cx="18"
-            cy="18"
-            r="15"
-            fill="none"
-            stroke="#e4e4e7"
-            strokeWidth="3"
-          />
-          <circle
-            cx="18"
-            cy="18"
-            r="15"
-            fill="none"
+            cx="18" cy="18" r="15" fill="none"
             stroke={isDanger ? '#ef4444' : isWarning ? '#f59e0b' : '#10b981'}
             strokeWidth="3"
             strokeDasharray={`${2 * Math.PI * 15}`}
@@ -72,12 +61,9 @@ export function Timer({ durationSeconds, running, onExpired }: Props) {
           />
         </svg>
       </div>
-
-      <span
-        className={`font-mono text-2xl font-bold tabular-nums transition-colors ${
-          isDanger ? 'text-red-500' : isWarning ? 'text-amber-500' : 'text-zinc-900'
-        }`}
-      >
+      <span className={`font-mono text-xl font-bold tabular-nums transition-colors ${
+        isDanger ? 'text-red-500' : isWarning ? 'text-amber-500' : 'text-stone-800'
+      }`}>
         {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
       </span>
     </div>
