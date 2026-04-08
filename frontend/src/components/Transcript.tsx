@@ -10,7 +10,7 @@ export function Transcript({ entries }: Props) {
 
   if (entries.length === 0) {
     return (
-      <div className="flex-1 flex items-center justify-center text-zinc-600 text-sm">
+      <div className="flex-1 flex items-center justify-center text-zinc-400 text-sm">
         Transcript will appear here…
       </div>
     )
@@ -27,14 +27,14 @@ export function Transcript({ entries }: Props) {
             className={`flex gap-3 ${e.speaker === 'candidate' ? 'flex-row-reverse' : ''}`}
           >
             <div className={`w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-mono font-bold mt-0.5 ${
-              e.speaker === 'interviewer' ? 'bg-indigo-500/20 text-indigo-400' : 'bg-emerald-500/20 text-emerald-400'
+              e.speaker === 'interviewer' ? 'bg-indigo-100 text-indigo-600' : 'bg-emerald-100 text-emerald-600'
             }`}>
               {e.speaker === 'interviewer' ? 'AI' : 'Y'}
             </div>
             <div className={`max-w-[78%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed ${
               e.speaker === 'interviewer'
-                ? 'bg-white/[0.04] text-zinc-200 rounded-tl-sm'
-                : 'bg-emerald-500/10 text-zinc-200 border border-emerald-500/15 rounded-tr-sm'
+                ? 'bg-zinc-100 text-zinc-800 rounded-tl-sm'
+                : 'bg-emerald-50 text-zinc-800 border border-emerald-200 rounded-tr-sm'
             }`}>
               {e.text}
             </div>

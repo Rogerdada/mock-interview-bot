@@ -103,7 +103,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-bg text-text font-sans">
+    <div className="min-h-screen bg-slate-50 text-zinc-900 font-sans">
       <AnimatePresence mode="wait">
         {state.screen === 'job-input' && (
           <JobInput key="job-input" onContinue={handleJobInput} />
@@ -136,15 +136,15 @@ export default function App() {
           <div key="feedback">
             {state.evaluating ? (
               <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-                <div className="w-14 h-14 rounded-full border-2 border-accent/30 border-t-accent animate-spin" />
-                <p className="font-mono text-muted">Generating your evaluation…</p>
-                <p className="text-muted text-sm">Using Google's hiring rubric</p>
+                <div className="w-14 h-14 rounded-full border-2 border-emerald-200 border-t-emerald-500 animate-spin" />
+                <p className="font-mono text-zinc-500">Generating your evaluation…</p>
+                <p className="text-zinc-400 text-sm">Using Google's hiring rubric</p>
               </div>
             ) : state.evaluationError ? (
               <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-6">
-                <p className="text-danger text-lg font-semibold">Evaluation Failed</p>
-                <p className="text-muted text-sm text-center max-w-md">{state.evaluationError}</p>
-                <button onClick={handleTryAgain} className="btn-secondary mt-4">
+                <p className="text-red-600 text-lg font-semibold">Evaluation Failed</p>
+                <p className="text-zinc-500 text-sm text-center max-w-md">{state.evaluationError}</p>
+                <button onClick={handleTryAgain} className="btn-ghost mt-4">
                   Try Again
                 </button>
               </div>

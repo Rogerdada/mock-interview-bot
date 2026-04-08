@@ -47,28 +47,28 @@ export function JobInput({ onContinue }: Props) {
         {/* Logo */}
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 mb-6">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
-              <span className="text-emerald-400 text-sm font-mono font-bold">M</span>
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+              <span className="text-emerald-600 text-sm font-mono font-bold">M</span>
             </div>
-            <span className="font-mono text-sm font-bold text-zinc-300">MockMind</span>
+            <span className="font-mono text-sm font-bold text-zinc-700">MockMind</span>
           </div>
-          <h1 className="text-3xl font-semibold text-white tracking-tight mb-2">
+          <h1 className="text-3xl font-semibold text-zinc-900 tracking-tight mb-2">
             Practice your interview
           </h1>
-          <p className="text-zinc-400 text-sm">
+          <p className="text-zinc-500 text-sm">
             Real-time voice mock interview with AI feedback
           </p>
         </div>
 
         <div className="glass p-6">
           {/* Mode tabs */}
-          <div className="flex gap-1 mb-5 p-1 bg-white/[0.03] rounded-lg w-fit">
+          <div className="flex gap-1 mb-5 p-1 bg-zinc-100 rounded-lg w-fit">
             {(['text', 'url'] as const).map((m) => (
               <button
                 key={m}
                 onClick={() => { setMode(m); setError(null) }}
                 className={`px-4 py-1.5 rounded-md text-xs font-medium transition-all ${
-                  mode === m ? 'bg-white/10 text-white' : 'text-zinc-500 hover:text-zinc-300'
+                  mode === m ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500 hover:text-zinc-700'
                 }`}
               >
                 {m === 'text' ? 'Paste text' : 'From URL'}
@@ -96,7 +96,7 @@ export function JobInput({ onContinue }: Props) {
           )}
 
           {error && (
-            <p className="mt-3 text-red-400 text-xs bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
+            <p className="mt-3 text-red-600 text-xs bg-red-50 border border-red-200 rounded-lg px-3 py-2">
               {error}
             </p>
           )}
@@ -111,7 +111,7 @@ export function JobInput({ onContinue }: Props) {
           </button>
         </div>
 
-        <p className="text-center text-zinc-600 text-xs mt-5">
+        <p className="text-center text-zinc-400 text-xs mt-5">
           Nothing is stored — session stays in your browser only
         </p>
       </div>

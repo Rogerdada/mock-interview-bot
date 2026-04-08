@@ -6,19 +6,19 @@
   *, *::before, *::after { box-sizing: border-box; }
   html, body, #root { height: 100%; }
   body {
-    background: #09090b;
-    color: #fafafa;
+    background: #f8fafc;
+    color: #18181b;
     font-family: 'DM Sans', sans-serif;
     -webkit-font-smoothing: antialiased;
   }
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb { background: #e4e4e7; border-radius: 4px; }
 }
 
 @layer components {
   .glass {
-    @apply bg-white/[0.03] border border-white/[0.06] rounded-2xl backdrop-blur-sm;
+    @apply bg-white border border-zinc-200 rounded-2xl shadow-sm;
   }
   .btn {
     @apply inline-flex items-center justify-center gap-2 font-medium
@@ -26,20 +26,20 @@
            disabled:cursor-not-allowed select-none;
   }
   .btn-green {
-    @apply btn bg-emerald-500 text-black hover:bg-emerald-400 active:scale-95;
+    @apply btn bg-emerald-500 text-white hover:bg-emerald-600 active:scale-95;
   }
   .btn-ghost {
-    @apply btn bg-white/5 text-zinc-300 hover:bg-white/10 border border-white/[0.06];
+    @apply btn bg-zinc-100 text-zinc-600 hover:bg-zinc-200 border border-zinc-200;
   }
   .btn-red {
-    @apply btn bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20;
+    @apply btn bg-red-50 text-red-500 border border-red-200 hover:bg-red-100;
   }
   .label {
-    @apply text-[11px] font-mono uppercase tracking-widest text-zinc-500;
+    @apply text-[11px] font-mono uppercase tracking-widest text-zinc-400;
   }
   .input-base {
-    @apply w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-3
-           text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-emerald-500/40
+    @apply w-full bg-white border border-zinc-200 rounded-xl px-4 py-3
+           text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-emerald-500
            transition-colors text-sm;
   }
 }

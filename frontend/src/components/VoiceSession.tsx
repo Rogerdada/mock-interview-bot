@@ -135,17 +135,17 @@ export function VoiceSession({ config, onEnd }: Props) {
   const micActive = isCapturing && !isPlaying
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#09090b]">
+    <div className="min-h-screen flex flex-col bg-slate-50">
       {/* Top bar */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.06]">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-200 bg-white">
         <div>
-          <p className="text-sm font-medium text-zinc-100">{config.parsedJd.role}</p>
+          <p className="text-sm font-medium text-zinc-900">{config.parsedJd.role}</p>
           <p className="text-xs text-zinc-500 mt-0.5">{config.parsedJd.company}</p>
         </div>
         <div className="flex items-center gap-4">
           {phase === 'active' && (
             <div className="flex items-center gap-1.5">
-              <span className={`w-1.5 h-1.5 rounded-full ${speakerActive ? 'bg-indigo-400 animate-pulse' : micActive ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-600'}`} />
+              <span className={`w-1.5 h-1.5 rounded-full ${speakerActive ? 'bg-indigo-500 animate-pulse' : micActive ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-300'}`} />
               <span className="text-xs text-zinc-500">
                 {speakerActive ? 'AI speaking' : 'Listening'}
               </span>
@@ -163,7 +163,7 @@ export function VoiceSession({ config, onEnd }: Props) {
       {/* Visualizer */}
       {phase === 'active' && (
         <div className="px-6 pt-4">
-          <div className="h-12 rounded-xl overflow-hidden bg-white/[0.02] border border-white/[0.04]">
+          <div className="h-12 rounded-xl overflow-hidden bg-white border border-zinc-200">
             <AudioVisualizer amplitude={speakerActive ? aiAmp : micAmp} color={speakerActive ? 'indigo' : 'green'} />
           </div>
         </div>
@@ -176,8 +176,8 @@ export function VoiceSession({ config, onEnd }: Props) {
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="flex-1 flex flex-col items-center justify-center gap-3"
           >
-            <div className="w-8 h-8 rounded-full border-2 border-zinc-700 border-t-emerald-500 animate-spin" />
-            <p className="text-zinc-400 text-sm">
+            <div className="w-8 h-8 rounded-full border-2 border-zinc-200 border-t-emerald-500 animate-spin" />
+            <p className="text-zinc-500 text-sm">
               {phase === 'connecting' ? 'Connecting to AI interviewer…' : 'Wrapping up session…'}
             </p>
           </motion.div>
@@ -188,8 +188,8 @@ export function VoiceSession({ config, onEnd }: Props) {
             className="flex-1 flex items-center justify-center px-6"
           >
             <div className="glass p-8 max-w-sm text-center">
-              <p className="text-red-400 font-semibold mb-2">Connection Error</p>
-              <p className="text-zinc-400 text-sm mb-5">{errorMsg}</p>
+              <p className="text-red-600 font-semibold mb-2">Connection Error</p>
+              <p className="text-zinc-500 text-sm mb-5">{errorMsg}</p>
               <button onClick={() => window.location.reload()} className="btn-ghost text-sm">Reload</button>
             </div>
           </motion.div>
@@ -199,7 +199,7 @@ export function VoiceSession({ config, onEnd }: Props) {
       {/* Transcript */}
       {phase === 'active' && (
         <div className="flex-1 flex flex-col min-h-0 mx-4 my-4 glass overflow-hidden">
-          <div className="px-4 py-3 border-b border-white/[0.06]">
+          <div className="px-4 py-3 border-b border-zinc-200">
             <p className="label">Transcript</p>
           </div>
           <Transcript entries={transcript} />

@@ -10,12 +10,12 @@ interface Props {
 }
 
 const RATING_META: Record<HireRating, { color: string; bar: string; value: number }> = {
-  'Strong Hire':     { color: 'text-emerald-400', bar: 'bg-emerald-400', value: 6 },
-  'Hire':            { color: 'text-emerald-400', bar: 'bg-emerald-400', value: 5 },
-  'Leaning Hire':    { color: 'text-yellow-400',  bar: 'bg-yellow-400',  value: 4 },
-  'Leaning No Hire': { color: 'text-orange-400',  bar: 'bg-orange-400',  value: 3 },
-  'No Hire':         { color: 'text-red-400',     bar: 'bg-red-400',     value: 2 },
-  'Strong No Hire':  { color: 'text-red-400',     bar: 'bg-red-400',     value: 1 },
+  'Strong Hire':     { color: 'text-emerald-600', bar: 'bg-emerald-500', value: 6 },
+  'Hire':            { color: 'text-emerald-600', bar: 'bg-emerald-500', value: 5 },
+  'Leaning Hire':    { color: 'text-amber-600',   bar: 'bg-amber-400',   value: 4 },
+  'Leaning No Hire': { color: 'text-orange-600',  bar: 'bg-orange-400',  value: 3 },
+  'No Hire':         { color: 'text-red-600',     bar: 'bg-red-500',     value: 2 },
+  'Strong No Hire':  { color: 'text-red-600',     bar: 'bg-red-500',     value: 1 },
 }
 
 function RatingPill({ rating }: { rating: HireRating }) {
@@ -68,7 +68,7 @@ export function Feedback({ evaluation, config, onTryAgain }: Props) {
         <div className="text-center mb-8">
           <p className="label mb-3">Interview Complete</p>
           <p className={`font-mono text-4xl font-bold mb-3 ${recMeta.color}`}>{rec}</p>
-          <p className="text-zinc-400 text-sm max-w-lg mx-auto leading-relaxed">{evaluation.overallSummary}</p>
+          <p className="text-zinc-500 text-sm max-w-lg mx-auto leading-relaxed">{evaluation.overallSummary}</p>
         </div>
 
         {/* Rubric */}
@@ -80,10 +80,10 @@ export function Feedback({ evaluation, config, onTryAgain }: Props) {
               return (
                 <div key={d.name}>
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-sm text-zinc-200">{d.name}</span>
+                    <span className="text-sm text-zinc-800">{d.name}</span>
                     <RatingPill rating={d.rating as HireRating} />
                   </div>
-                  <div className="h-1 bg-white/5 rounded-full overflow-hidden mb-2">
+                  <div className="h-1 bg-zinc-100 rounded-full overflow-hidden mb-2">
                     <div className={`h-full rounded-full transition-all duration-700 ${m.bar}`} style={{ width: `${(m.value / 6) * 100}%` }} />
                   </div>
                   <p className="text-zinc-500 text-xs leading-relaxed">{d.justification}</p>
@@ -96,20 +96,20 @@ export function Feedback({ evaluation, config, onTryAgain }: Props) {
         {/* Strengths + Improvements */}
         <div className="grid grid-cols-2 gap-3 mb-4">
           <div className="glass p-4">
-            <p className="label text-emerald-500 mb-3">Strengths</p>
+            <p className="label text-emerald-600 mb-3">Strengths</p>
             <ul className="space-y-2">
               {evaluation.strengths.map((s, i) => (
-                <li key={i} className="text-xs text-zinc-300 flex gap-2">
+                <li key={i} className="text-xs text-zinc-700 flex gap-2">
                   <span className="text-emerald-500 flex-shrink-0">✓</span>{s}
                 </li>
               ))}
             </ul>
           </div>
           <div className="glass p-4">
-            <p className="label text-amber-500 mb-3">Improve</p>
+            <p className="label text-amber-600 mb-3">Improve</p>
             <ul className="space-y-2">
               {evaluation.improvements.map((s, i) => (
-                <li key={i} className="text-xs text-zinc-300 flex gap-2">
+                <li key={i} className="text-xs text-zinc-700 flex gap-2">
                   <span className="text-amber-500 flex-shrink-0">→</span>{s}
                 </li>
               ))}
@@ -123,21 +123,21 @@ export function Feedback({ evaluation, config, onTryAgain }: Props) {
             <p className="label mb-3">Stronger Answers</p>
             <div className="space-y-2">
               {evaluation.sampleStrongerAnswers.map((item, i) => (
-                <div key={i} className="border border-white/[0.06] rounded-xl overflow-hidden">
+                <div key={i} className="border border-zinc-200 rounded-xl overflow-hidden">
                   <button
                     onClick={() => setExpanded(expanded === i ? null : i)}
-                    className="w-full text-left px-4 py-3 flex items-start justify-between gap-4 hover:bg-white/[0.02] transition-colors"
+                    className="w-full text-left px-4 py-3 flex items-start justify-between gap-4 hover:bg-zinc-50 transition-colors"
                   >
                     <div>
-                      <p className="text-sm text-zinc-200">{item.originalQuestion}</p>
+                      <p className="text-sm text-zinc-900">{item.originalQuestion}</p>
                       <p className="text-xs text-zinc-500 mt-0.5">You: {item.candidateAnswer}</p>
                     </div>
-                    <span className="text-zinc-600 text-xs flex-shrink-0 mt-1">{expanded === i ? '▲' : '▼'}</span>
+                    <span className="text-zinc-400 text-xs flex-shrink-0 mt-1">{expanded === i ? '▲' : '▼'}</span>
                   </button>
                   {expanded === i && (
-                    <div className="px-4 pb-4 border-t border-white/[0.06]">
+                    <div className="px-4 pb-4 border-t border-zinc-200">
                       <p className="label mt-3 mb-1.5">Stronger answer</p>
-                      <p className="text-zinc-300 text-xs leading-relaxed">{item.strongerAnswer}</p>
+                      <p className="text-zinc-700 text-xs leading-relaxed">{item.strongerAnswer}</p>
                     </div>
                   )}
                 </div>

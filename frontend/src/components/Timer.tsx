@@ -55,7 +55,7 @@ export function Timer({ durationSeconds, running, onExpired }: Props) {
             cy="18"
             r="15"
             fill="none"
-            stroke="#1e1e2e"
+            stroke="#e4e4e7"
             strokeWidth="3"
           />
           <circle
@@ -63,7 +63,7 @@ export function Timer({ durationSeconds, running, onExpired }: Props) {
             cy="18"
             r="15"
             fill="none"
-            stroke={isDanger ? '#f87171' : isWarning ? '#fbbf24' : '#4ade80'}
+            stroke={isDanger ? '#ef4444' : isWarning ? '#f59e0b' : '#10b981'}
             strokeWidth="3"
             strokeDasharray={`${2 * Math.PI * 15}`}
             strokeDashoffset={`${2 * Math.PI * 15 * (1 - progress)}`}
@@ -75,7 +75,7 @@ export function Timer({ durationSeconds, running, onExpired }: Props) {
 
       <span
         className={`font-mono text-2xl font-bold tabular-nums transition-colors ${
-          isDanger ? 'text-danger' : isWarning ? 'text-warning' : 'text-text'
+          isDanger ? 'text-red-500' : isWarning ? 'text-amber-500' : 'text-zinc-900'
         }`}
       >
         {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
