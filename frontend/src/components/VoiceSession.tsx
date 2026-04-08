@@ -26,7 +26,7 @@ export function VoiceSession({ config, onEnd }: Props) {
   const { enqueueAudio, initPlayback, stopPlayback, isPlaying, amplitude: aiAmp } = useAudioPlayback()
   const handleAudioChunk = useCallback((b64: string) => enqueueAudio(b64), [enqueueAudio])
 
-  const { status: wsStatus, transcript, error: wsError, connect, sendAudioChunk, sendText, disconnect, appendUserTranscript } =
+  const { status: wsStatus, transcript, error: wsError, isAiSpeaking, connect, sendAudioChunk, sendText, disconnect, appendUserTranscript } =
     useGeminiLive(handleAudioChunk)
 
   // Don't forward mic audio to Gemini while AI is playing (avoids echo/confusion)
@@ -47,8 +47,25 @@ export function VoiceSession({ config, onEnd }: Props) {
     } else if (wsStatus === 'error') {
       setPhase('error')
       setErrorMsg(wsError ?? 'Connection failed. Check your API key and try again.')
+    } else if (wsStatus === 'closed' && !endedRef.current) {
+      // Gemini closed the connection mid-session (quota, session limit, etc.)
+      setPhase('error')
+      setErrorMsg('The AI connection was closed unexpectedly. This may be due to API quota limits or session length. Please try again.')
     }
   }, [wsStatus]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Safety: if Gemini says it's done speaking but isPlaying is still true after 3s, force-reset
+  useEffect(() => {
+    if (isAiSpeaking) return
+    const timer = setTimeout(() => {
+      if (isPlayingRef.current) {
+        isPlayingRef.current = false
+        const r = recognitionRef.current
+        if (r && phase === 'active') { try { r.start() } catch { /* ignore */ } }
+      }
+    }, 3000)
+    return () => clearTimeout(timer)
+  }, [isAiSpeaking]) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function beginSession() {
     try {
