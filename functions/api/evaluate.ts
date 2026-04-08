@@ -29,7 +29,9 @@ export const onRequestPost: PagesFunction<{ GEMINI_API_KEY: string }> = async ({
 Role: ${body.role ?? 'Unknown'}
 Job Description: ${(body.jobDescription ?? '').slice(0, 2000)}
 
-Transcript:
+Note: This was a voice interview. The AI interviewer's questions were delivered as audio and are not captured as text. Only the candidate's spoken answers are transcribed below. Please evaluate the candidate based on their answers in the context of a ${body.interviewType ?? 'Behavioral'} interview for this role.
+
+Candidate's answers:
 ${body.transcript.slice(0, 8000)}`
 
     const res = await fetch(`${GEMINI_URL}?key=${env.GEMINI_API_KEY}`, {

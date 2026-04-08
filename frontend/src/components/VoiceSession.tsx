@@ -22,6 +22,7 @@ export function VoiceSession({ config, onEnd }: Props) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null)
   const isPlayingRef = useRef(false)
+  const latestTranscriptRef = useRef<TranscriptEntry[]>([])
 
   const { enqueueAudio, initPlayback, stopPlayback, isPlaying, amplitude: aiAmp } = useAudioPlayback()
   const handleAudioChunk = useCallback((b64: string) => enqueueAudio(b64), [enqueueAudio])
@@ -35,6 +36,9 @@ export function VoiceSession({ config, onEnd }: Props) {
   }, [sendAudioChunk])
 
   const { isCapturing, amplitude: micAmp, startCapture, stopCapture } = useAudioCapture()
+
+  // Keep a ref always pointing to the latest transcript to avoid stale closures
+  useEffect(() => { latestTranscriptRef.current = transcript }, [transcript])
 
   useEffect(() => {
     initPlayback()
@@ -123,7 +127,7 @@ export function VoiceSession({ config, onEnd }: Props) {
     setTimeout(() => {
       disconnect()
       stopPlayback()
-      onEnd(transcript)
+      onEnd(latestTranscriptRef.current)
     }, reason === 'timer' ? 5000 : 500)
   }
 
