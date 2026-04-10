@@ -10,7 +10,6 @@ const INTERVIEW_TYPE_INSTRUCTIONS: Record<InterviewType, string> = {
   behavioral: `BEHAVIORAL INTERVIEW INSTRUCTIONS:
 - Ask STAR-method questions tied to the key competencies in the job description (e.g. leadership, collaboration, problem-solving, dealing with ambiguity, data-driven decision making).
 - Probe for specifics: situation, task, action, result. If answers are vague, push for concrete examples: "Can you tell me more about your specific role in that?" / "What was the measurable outcome?"
-- Ask 3-5 questions depending on the interview length, allowing 2-4 minutes per answer with follow-ups.
 - Sample questions to draw from: "Tell me about a time you had to influence a team without direct authority." / "Describe a situation where data conflicted with intuition — what did you do?" / "Tell me about a project that failed. What did you learn?"`,
 
   'case-study': `CASE STUDY INTERVIEW INSTRUCTIONS:
@@ -28,12 +27,9 @@ const INTERVIEW_TYPE_INSTRUCTIONS: Record<InterviewType, string> = {
 }
 
 export function buildSystemPrompt(config: InterviewConfig): string {
-  const { parsedJd, interviewType, duration } = config
+  const { parsedJd, interviewType, questionCount } = config
   const typeLabel = INTERVIEW_TYPE_LABELS[interviewType]
   const typeInstructions = INTERVIEW_TYPE_INSTRUCTIONS[interviewType]
-
-  // Approximate questions based on duration
-  const numQuestions = duration === 5 ? 2 : duration === 10 ? 3 : 5
 
   return `You are a senior interviewer at ${parsedJd.company}. You are conducting a ${typeLabel} interview for the role of ${parsedJd.role}.
 
@@ -42,15 +38,18 @@ YOUR PERSONALITY:
 - Ask one question at a time. Wait for the candidate to fully finish before responding.
 - Use natural follow-up probes: "Can you tell me more about..." / "What was the outcome?" / "How did you measure success?" / "What would you do differently?"
 - Do NOT give feedback, hints, or reveal your evaluation during the interview. Save all evaluation for after.
-- Keep track of time — you have ${duration} minutes total. Plan to ask approximately ${numQuestions} questions.
+
+QUESTION QUOTA:
+- Ask exactly ${questionCount} main questions in total (not counting follow-up probes).
+- Keep track internally — once you have asked ${questionCount} questions, move to the closing.
 
 HOW TO START:
-Begin with a warm introduction: "Hi, thanks for joining today. I'm [choose a realistic interviewer name], a [realistic title] at ${parsedJd.company}. I'll be conducting your ${typeLabel} interview for the ${parsedJd.role} role. We have about ${duration} minutes together. Let's dive in — [ask your first question]."
+Begin with a warm introduction: "Hi, thanks for joining today. I'm [choose a realistic interviewer name], a [realistic title] at ${parsedJd.company}. I'll be conducting your ${typeLabel} interview for the ${parsedJd.role} role. We have ${questionCount} questions lined up. Let's dive in — [ask your first question]."
 
 ${typeInstructions}
 
 CLOSING:
-When you're near the end of time, say something like: "We're coming up on time — last question: [final question]." After the final answer, close warmly: "That's all I have for today. Thanks so much for your time. You'll hear back about next steps soon. Good luck!"
+After your ${questionCount}th question and the candidate's answer, close warmly: "That's all I have for today — thank you so much for your time. You'll hear back about next steps soon. Good luck!"
 
 KEY COMPETENCIES FOR THIS ROLE:
 ${parsedJd.keyCompetencies.length > 0 ? parsedJd.keyCompetencies.join(', ') : 'Use your judgment based on the job description.'}

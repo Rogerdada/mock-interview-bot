@@ -8,7 +8,7 @@ import { parseJobDescription, evaluateInterview } from './lib/api'
 import type {
   Screen,
   InterviewType,
-  InterviewDuration,
+  InterviewQuestionCount,
   ParsedJd,
   Evaluation,
   TranscriptEntry,
@@ -19,7 +19,7 @@ interface AppState {
   jobDescription: string
   parsedJd: ParsedJd | null
   interviewType: InterviewType
-  duration: InterviewDuration
+  questionCount: InterviewQuestionCount
   evaluation: Evaluation | null
   evaluating: boolean
   evaluationError: string | null
@@ -30,7 +30,7 @@ const DEFAULT_STATE: AppState = {
   jobDescription: '',
   parsedJd: null,
   interviewType: 'behavioral',
-  duration: 10,
+  questionCount: 5,
   evaluation: null,
   evaluating: false,
   evaluationError: null,
@@ -43,12 +43,10 @@ export default function App() {
     setState((s) => ({ ...s, ...updates }))
   }
 
-  // Screen 1 → Screen 2: parse JD
   async function handleJobInput(jobDescription: string) {
     patch({ jobDescription, screen: 'config', parsedJd: null })
     try {
       const raw = await parseJobDescription(jobDescription)
-      // Ensure all fields exist even if API returns partial data
       patch({
         parsedJd: {
           company: raw.company || 'Unknown Company',
@@ -61,12 +59,10 @@ export default function App() {
     }
   }
 
-  // Screen 2 → Screen 3: start session
-  function handleStartInterview(type: InterviewType, duration: InterviewDuration) {
-    patch({ interviewType: type, duration, screen: 'session' })
+  function handleStartInterview(type: InterviewType, questionCount: InterviewQuestionCount) {
+    patch({ interviewType: type, questionCount, screen: 'session' })
   }
 
-  // Screen 3 → Screen 4: evaluate
   async function handleSessionEnd(transcript: TranscriptEntry[]) {
     patch({ screen: 'feedback', evaluating: true, evaluationError: null })
 
@@ -90,12 +86,10 @@ export default function App() {
     }
   }
 
-  // Reset
   function handleTryAgain() {
     setState(DEFAULT_STATE)
   }
 
-  // Placeholder ParsedJd while loading
   const parsedJd: ParsedJd = state.parsedJd ?? {
     company: 'Loading…',
     role: 'Loading…',
@@ -126,7 +120,7 @@ export default function App() {
               jobDescription: state.jobDescription,
               parsedJd: state.parsedJd,
               interviewType: state.interviewType,
-              duration: state.duration,
+              questionCount: state.questionCount,
             }}
             onEnd={handleSessionEnd}
           />
@@ -155,7 +149,7 @@ export default function App() {
                   jobDescription: state.jobDescription,
                   parsedJd: state.parsedJd ?? parsedJd,
                   interviewType: state.interviewType,
-                  duration: state.duration,
+                  questionCount: state.questionCount,
                 }}
                 onTryAgain={handleTryAgain}
               />

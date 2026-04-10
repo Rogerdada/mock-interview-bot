@@ -33,7 +33,7 @@ export function Feedback({ evaluation, config, onTryAgain }: Props) {
     }
     add('Mock Interview Report', 16, true)
     add(`${config.parsedJd.role} · ${config.parsedJd.company}`)
-    add(`${config.interviewType} · ${config.duration} min · ${new Date().toLocaleDateString()}`)
+    add(`${config.interviewType} · ${config.questionCount} questions · ${new Date().toLocaleDateString()}`)
     y += 4
     add(`Overall: ${evaluation.overallRecommendation}`, 13, true)
     add(evaluation.overallSummary)

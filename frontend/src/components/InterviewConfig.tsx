@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import type { InterviewDuration, InterviewType, ParsedJd } from '../types'
+import type { InterviewQuestionCount, InterviewType, ParsedJd } from '../types'
 
 interface Props {
   jobDescription: string
   parsedJd: ParsedJd
-  onStart: (type: InterviewType, duration: InterviewDuration) => void
+  onStart: (type: InterviewType, questionCount: InterviewQuestionCount) => void
   onBack: () => void
 }
 
@@ -15,9 +15,15 @@ const TYPES: Array<{ id: InterviewType; label: string; desc: string }> = [
   { id: 'company-knowledge', label: 'Company Knowledge',  desc: "Products, strategy, competitors & why you want this role" },
 ]
 
+const QUESTION_COUNTS: Array<{ value: InterviewQuestionCount; label: string; desc: string }> = [
+  { value: 3, label: '3',  desc: 'Quick' },
+  { value: 5, label: '5',  desc: 'Standard' },
+  { value: 8, label: '8',  desc: 'Thorough' },
+]
+
 export function InterviewConfig({ parsedJd, onStart, onBack }: Props) {
-  const [type, setType]         = useState<InterviewType>('behavioral')
-  const [duration, setDuration] = useState<InterviewDuration>(10)
+  const [type, setType]               = useState<InterviewType>('behavioral')
+  const [questionCount, setCount]     = useState<InterviewQuestionCount>(5)
 
   return (
     <motion.div
@@ -64,34 +70,37 @@ export function InterviewConfig({ parsedJd, onStart, onBack }: Props) {
             >
               <div className="flex items-center justify-between">
                 <span className="font-medium text-sm text-stone-900">{t.label}</span>
-                {type === t.id && (
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
-                )}
+                {type === t.id && <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />}
               </div>
               <p className="text-stone-400 text-xs mt-0.5">{t.desc}</p>
             </button>
           ))}
         </div>
 
-        {/* Duration */}
-        <p className="label mb-2.5">Duration</p>
+        {/* Question count */}
+        <p className="label mb-2.5">Number of questions</p>
         <div className="flex gap-2 mb-8">
-          {([5, 10, 15] as InterviewDuration[]).map((d) => (
+          {QUESTION_COUNTS.map(({ value, label, desc }) => (
             <button
-              key={d}
-              onClick={() => setDuration(d)}
-              className="flex-1 py-2.5 rounded-xl text-sm font-mono font-bold transition-all duration-150"
-              style={duration === d
-                ? { background: 'rgba(16,185,129,0.08)', color: '#059669', boxShadow: '0 0 0 1.5px rgba(16,185,129,0.4)' }
-                : { background: 'white', color: '#a8a29e', boxShadow: '0 0 0 1px rgba(0,0,0,0.06)' }
+              key={value}
+              onClick={() => setCount(value)}
+              className="flex-1 py-3 rounded-xl transition-all duration-150 flex flex-col items-center gap-0.5"
+              style={questionCount === value
+                ? { background: 'rgba(16,185,129,0.08)', boxShadow: '0 0 0 1.5px rgba(16,185,129,0.4)' }
+                : { background: 'white', boxShadow: '0 0 0 1px rgba(0,0,0,0.06)' }
               }
             >
-              {d} min
+              <span className={`text-lg font-bold font-mono ${questionCount === value ? 'text-emerald-600' : 'text-stone-400'}`}>
+                {label}
+              </span>
+              <span className={`text-[10px] font-medium ${questionCount === value ? 'text-emerald-500' : 'text-stone-400'}`}>
+                {desc}
+              </span>
             </button>
           ))}
         </div>
 
-        <button onClick={() => onStart(type, duration)} className="btn-green w-full">
+        <button onClick={() => onStart(type, questionCount)} className="btn-green w-full">
           Start Interview
         </button>
       </div>

@@ -113,21 +113,18 @@ export function VoiceSession({ config, onEnd }: Props) {
     }
   }, [isPlaying]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  function endInterview(reason: 'timer' | 'manual') {
+  function endInterview() {
     if (endedRef.current) return
     endedRef.current = true
     setPhase('ending')
     setTimerRunning(false)
     recognitionRef.current?.stop()
     stopCapture()
-    if (reason === 'timer') {
-      sendText('Time is up. Please give a brief closing statement and thank the candidate.')
-    }
     setTimeout(() => {
       disconnect()
       stopPlayback()
       onEnd(latestTranscriptRef.current)
-    }, reason === 'timer' ? 5000 : 500)
+    }, 500)
   }
 
   const speakerActive = isPlaying
@@ -140,21 +137,22 @@ export function VoiceSession({ config, onEnd }: Props) {
         style={{ boxShadow: '0 1px 0 rgba(0,0,0,0.06)' }}>
         <div>
           <p className="text-sm font-semibold text-stone-900">{config.parsedJd.role}</p>
-          <p className="text-xs text-stone-400 mt-0.5">{config.parsedJd.company}</p>
+          <p className="text-xs text-stone-400 mt-0.5">
+            {config.parsedJd.company} · {config.questionCount} questions
+          </p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           {phase === 'active' && (
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full"
-              style={{ background: 'rgba(0,0,0,0.04)' }}>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full" style={{ background: 'rgba(0,0,0,0.04)' }}>
               <span className={`w-1.5 h-1.5 rounded-full ${speakerActive ? 'bg-indigo-500 animate-pulse' : micActive ? 'bg-emerald-500 animate-pulse' : 'bg-stone-300'}`} />
               <span className="text-xs text-stone-500 font-medium">
                 {speakerActive ? 'AI speaking' : 'Listening'}
               </span>
             </div>
           )}
-          <Timer durationSeconds={config.duration * 60} running={timerRunning} onExpired={() => endInterview('timer')} />
+          <Timer running={timerRunning} />
           {phase === 'active' && (
-            <button onClick={() => endInterview('manual')} className="btn-red text-xs px-3 py-1.5">
+            <button onClick={endInterview} className="btn-red text-xs px-3 py-1.5">
               End
             </button>
           )}
@@ -202,7 +200,7 @@ export function VoiceSession({ config, onEnd }: Props) {
       {phase === 'active' && (
         <div className="flex-1 flex flex-col min-h-0 mx-4 my-4 glass overflow-hidden">
           <div className="px-4 py-3" style={{ boxShadow: '0 1px 0 rgba(0,0,0,0.05)' }}>
-            <p className="label">Transcript</p>
+            <p className="label">Live Transcript</p>
           </div>
           <Transcript entries={transcript} />
         </div>

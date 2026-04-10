@@ -2,7 +2,7 @@ export type Screen = 'job-input' | 'config' | 'session' | 'feedback'
 
 export type InterviewType = 'behavioral' | 'case-study' | 'company-knowledge'
 
-export type InterviewDuration = 5 | 10 | 15
+export type InterviewQuestionCount = 3 | 5 | 8
 
 export interface ParsedJd {
   company: string
@@ -14,7 +14,7 @@ export interface InterviewConfig {
   jobDescription: string
   parsedJd: ParsedJd
   interviewType: InterviewType
-  duration: InterviewDuration
+  questionCount: InterviewQuestionCount
 }
 
 export interface TranscriptEntry {
@@ -63,6 +63,7 @@ export interface GeminiSetupMessage {
           prebuiltVoiceConfig: { voiceName: string }
         }
       }
+      outputAudioTranscription?: Record<string, never>
     }
     systemInstruction: {
       parts: Array<{ text: string }>
@@ -87,6 +88,7 @@ export interface GeminiServerContent {
         | { inlineData: { mimeType: string; data: string } }
       >
     }
+    outputTranscription?: { text: string }
     turnComplete?: boolean
     interrupted?: boolean
   }

@@ -116,7 +116,7 @@ export function useGeminiLive(
             return
           }
 
-          // Server content (audio + text)
+          // Server content (audio + transcription)
           if (data.serverContent) {
             const { serverContent } = data
 
@@ -131,6 +131,12 @@ export function useGeminiLive(
                 }
               }
               if (hasAudio) setIsAiSpeaking(true)
+            }
+
+            // outputAudioTranscription: real-time transcription of AI speech
+            if (serverContent.outputTranscription?.text) {
+              accTextRef.current += serverContent.outputTranscription.text
+              setIsAiSpeaking(true)
             }
 
             if (serverContent.turnComplete) {
