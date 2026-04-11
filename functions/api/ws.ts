@@ -20,7 +20,7 @@ export const onRequestGet: PagesFunction<{ GEMINI_API_KEY: string }> = async ({ 
         setup: {
           model: 'models/gemini-2.5-flash-native-audio-latest',
           generationConfig: {
-            responseModalities: ['AUDIO', 'TEXT'],
+            responseModalities: ['AUDIO'],
             speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } } },
           },
           systemInstruction: { parts: [{ text: systemPrompt }] },
