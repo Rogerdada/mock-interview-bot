@@ -127,14 +127,13 @@ export function useGeminiLive(
                 if ('inlineData' in part && part.inlineData.mimeType.startsWith('audio/')) {
                   onAudioChunk(part.inlineData.data)
                   hasAudio = true
-                } else if ('text' in part && part.text) {
-                  accTextRef.current += part.text
                 }
+                // Text parts in audio-only mode are model internal thinking, NOT speech — ignore them
               }
               if (hasAudio) setIsAiSpeaking(true)
             }
 
-            // outputAudioTranscription: real-time transcription of AI speech
+            // outputAudioTranscription: actual transcription of AI spoken words
             if (serverContent.outputTranscription?.text) {
               accTextRef.current += serverContent.outputTranscription.text
               setIsAiSpeaking(true)
