@@ -57,7 +57,8 @@ export function VoiceSession({ config, onEnd }: Props) {
     }
   }, [wsStatus]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Safety: if Gemini says it's done speaking but isPlaying is still true after 3s, force-reset
+  // Safety: if isPlaying is truly stuck (e.g. AudioContext issue), force-reset after 15s.
+  // Must be long enough to not interfere with long AI responses (case study = 10s+).
   useEffect(() => {
     if (isAiSpeaking) return
     const timer = setTimeout(() => {
@@ -66,7 +67,7 @@ export function VoiceSession({ config, onEnd }: Props) {
         const r = recognitionRef.current
         if (r && phase === 'active') { try { r.start() } catch { /* ignore */ } }
       }
-    }, 3000)
+    }, 15000)
     return () => clearTimeout(timer)
   }, [isAiSpeaking]) // eslint-disable-line react-hooks/exhaustive-deps
 
