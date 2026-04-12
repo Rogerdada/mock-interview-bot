@@ -18,10 +18,11 @@ export const onRequestGet: PagesFunction<{ GEMINI_API_KEY: string }> = async ({ 
     geminiWs.addEventListener('open', () => {
       geminiWs!.send(JSON.stringify({
         setup: {
-          model: 'models/gemini-2.5-flash-native-audio-latest',
+          model: 'models/gemini-2.0-flash-live-001',
           generationConfig: {
             responseModalities: ['AUDIO'],
             speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } } },
+            outputAudioTranscription: {},
           },
           systemInstruction: { parts: [{ text: systemPrompt }] },
         },
