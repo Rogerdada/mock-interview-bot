@@ -1,4 +1,4 @@
-const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent'
+const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-preview:generateContent'
 
 const SYSTEM = `You are a hiring committee reviewer at Google/YouTube. Evaluate the candidate using Google's structured evaluation rubric.
 Return ONLY valid JSON (no markdown):
