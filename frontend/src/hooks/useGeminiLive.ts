@@ -29,7 +29,6 @@ export function useGeminiLive(
 
   const wsRef = useRef<WebSocket | null>(null)
   const accTextRef = useRef<string>('')
-  const audioChunksRef = useRef<string[]>([]) // collect AI audio per turn for transcription
 
   const appendEntry = useCallback((speaker: 'interviewer' | 'candidate', text: string) => {
     setTranscript((prev) => {
@@ -127,7 +126,6 @@ export function useGeminiLive(
               for (const part of serverContent.modelTurn.parts) {
                 if ('inlineData' in part && part.inlineData.mimeType.startsWith('audio/')) {
                   onAudioChunk(part.inlineData.data)
-                  audioChunksRef.current.push(part.inlineData.data)
                   hasAudio = true
                 }
                 // Text parts in audio-only mode are model internal thinking — ignore them
@@ -137,25 +135,10 @@ export function useGeminiLive(
 
             if (serverContent.turnComplete) {
               setIsAiSpeaking(false)
-              const chunks = audioChunksRef.current.splice(0)
-              if (chunks.length > 0) {
-                // Transcribe AI speech in background; append to transcript when done
-                fetch('/api/transcribe', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ chunks }),
-                })
-                  .then((r) => r.json())
-                  .then(({ text }: { text: string }) => {
-                    if (text?.trim()) appendEntry('interviewer', text.trim())
-                  })
-                  .catch(() => { /* transcription failure is non-fatal */ })
-              }
             }
 
             if (serverContent.interrupted) {
               setIsAiSpeaking(false)
-              audioChunksRef.current = []
             }
           }
         } catch {
