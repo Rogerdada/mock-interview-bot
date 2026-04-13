@@ -95,6 +95,7 @@ export function useGeminiLive(
             type?: string
             message?: string
             code?: number
+            reason?: string
           }
 
           // Worker-level errors
