@@ -1,4 +1,4 @@
-const GEMINI_WS = 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent'
+const GEMINI_WS = 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent'
 
 export const onRequestGet: PagesFunction<{ GEMINI_API_KEY: string }> = async ({ request, env }) => {
   if (request.headers.get('Upgrade') !== 'websocket') {
@@ -21,7 +21,7 @@ export const onRequestGet: PagesFunction<{ GEMINI_API_KEY: string }> = async ({ 
           model: 'models/gemini-3.1-flash-live-preview',
           generationConfig: {
             responseModalities: ['AUDIO'],
-            speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } } },
+            speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Aoede' } } },
           },
           systemInstruction: { parts: [{ text: systemPrompt }] },
         },
