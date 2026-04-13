@@ -1,4 +1,4 @@
-const GEMINI_WS = 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent'
+const GEMINI_WS = 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent'
 
 export const onRequestGet: PagesFunction<{ GEMINI_API_KEY: string }> = async ({ request, env }) => {
   if (request.headers.get('Upgrade') !== 'websocket') {
