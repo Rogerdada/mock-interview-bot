@@ -168,7 +168,7 @@ export function useGeminiLive(
     ws.send(
       JSON.stringify({
         realtimeInput: {
-          mediaChunks: [{ mimeType: 'audio/pcm;rate=16000', data: base64pcm }],
+          audio: { data: base64pcm, mimeType: 'audio/pcm;rate=16000' },
         },
       })
     )
@@ -179,10 +179,7 @@ export function useGeminiLive(
     if (!ws || ws.readyState !== WebSocket.OPEN) return
     ws.send(
       JSON.stringify({
-        clientContent: {
-          turns: [{ role: 'user', parts: [{ text }] }],
-          turnComplete: true,
-        },
+        realtimeInput: { text },
       })
     )
   }, [])
