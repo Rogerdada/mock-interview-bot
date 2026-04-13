@@ -105,7 +105,7 @@ export function useGeminiLive(
           }
 
           if (data.type === 'gemini_closed') {
-            setError(`Gemini closed the connection (code ${data.code ?? '?'}). ${data.code === 1008 ? 'API quota exceeded.' : data.code === 4029 ? 'Rate limit hit — wait a moment and retry.' : 'Check API key or quota.'}`)
+            setError(`Gemini closed the connection (code ${data.code ?? '?'}). Reason: ${data.reason || 'none'}. ${data.code === 1008 ? 'API quota exceeded.' : data.code === 4029 ? 'Rate limit hit — wait a moment and retry.' : 'Check API key or quota.'}`)
             setStatus('error')
             return
           }

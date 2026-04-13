@@ -18,7 +18,7 @@ export const onRequestGet: PagesFunction<{ GEMINI_API_KEY: string }> = async ({ 
     geminiWs.addEventListener('open', () => {
       geminiWs!.send(JSON.stringify({
         setup: {
-          model: 'models/gemini-2.5-flash-native-audio-latest',
+          model: 'models/gemini-3.1-flash-live-preview',
           generationConfig: {
             responseModalities: ['AUDIO'],
             speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Aoede' } } },
@@ -45,7 +45,7 @@ export const onRequestGet: PagesFunction<{ GEMINI_API_KEY: string }> = async ({ 
 
     geminiWs.addEventListener('close', (e) => {
       if (server.readyState === 1) {
-        server.send(JSON.stringify({ type: 'gemini_closed', code: e.code }))
+        server.send(JSON.stringify({ type: 'gemini_closed', code: e.code, reason: e.reason }))
         server.close(1000, 'Gemini closed')
       }
     })
