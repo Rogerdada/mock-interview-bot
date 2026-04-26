@@ -168,7 +168,7 @@ export function useGeminiLive(
     ws.send(
       JSON.stringify({
         realtimeInput: {
-          audio: { data: base64pcm, mimeType: 'audio/pcm;rate=16000' },
+          mediaChunks: [{ mimeType: 'audio/pcm;rate=16000', data: base64pcm }],
         },
       })
     )
